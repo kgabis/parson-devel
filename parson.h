@@ -92,7 +92,7 @@ JSON_Array  * json_array_get_array  (const JSON_Array *array, size_t index);
 double        json_array_get_number (const JSON_Array *array, size_t index);
 int           json_array_get_boolean(const JSON_Array *array, size_t index);
 size_t        json_array_get_count  (const JSON_Array *array);
-
+    
 /* JSON Value */
 JSON_Value_Type json_value_get_type   (const JSON_Value *value);
 JSON_Object *   json_value_get_object (const JSON_Value *value);
@@ -101,7 +101,8 @@ const char  *   json_value_get_string (const JSON_Value *value);
 double          json_value_get_number (const JSON_Value *value);
 int             json_value_get_boolean(const JSON_Value *value);
 void            json_value_free       (JSON_Value *value);
-    
+JSON_Value *    json_value_deep_copy  (const JSON_Value *value);
+
 #ifdef __cplusplus
 }
 #endif

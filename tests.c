@@ -30,7 +30,7 @@
 #define TEST(A) printf("%-72s-",#A);              \
                 if(A){puts(" OK");tests_passed++;} \
                 else{puts(" FAIL");tests_failed++;}
-#define STREQ(A, B) (A && B ? strcmp(A, B) == 0 : 0)
+#define STREQ(A, B) ((A) && (B) ? strcmp((A), (B)) == 0 : 0)
 
 
 void test_suite_1(void);
@@ -38,9 +38,11 @@ void test_suite_2(JSON_Value *value);
 void test_suite_2_no_comments(void);
 void test_suite_2_with_comments(void);
 void test_suite_3(void);
+void test_suite_4(void);
 
 char *read_file(const char *filename);
 void print_commits_info(const char *username, const char *repo);
+int  are_values_equal(const JSON_Value *a, const JSON_Value *b);
 
 static int tests_passed;
 static int tests_failed;
@@ -52,6 +54,7 @@ int main() {
     test_suite_2_no_comments();
     test_suite_2_with_comments();
     test_suite_3();
+    test_suite_4();
     printf("Tests failed: %d\n", tests_failed);
     printf("Tests passed: %d\n", tests_passed);
     return 0;
@@ -205,6 +208,18 @@ void test_suite_3(void) {
     TEST(json_parse_string("[\"\\uDF67\\uD834\"]") == NULL); /* wrong order surrogate pair */
 }
 
+/* Test deep copy funtion */
+void test_suite_4() {
+    const char *filename = "tests/test_2.txt";
+    JSON_Value *a = NULL, *a_copy = NULL;
+    printf("Testing %s:\n", filename);
+    a = json_parse_file(filename);
+    TEST(are_values_equal(a, a)); /* test equality test */
+    a_copy = json_value_deep_copy(a);
+    TEST(a_copy != NULL);
+    TEST(are_values_equal(a, a_copy));
+}
+
 void print_commits_info(const char *username, const char *repo) {
     JSON_Value *root_value;
     JSON_Array *commits;
@@ -243,4 +258,61 @@ void print_commits_info(const char *username, const char *repo) {
     /* cleanup code */
     json_value_free(root_value);
     system(cleanup_command);
+}
+
+int are_values_equal(const JSON_Value *a, const JSON_Value *b) {
+    JSON_Object *a_object = NULL, *b_object = NULL;
+    JSON_Array *a_array = NULL, *b_array = NULL;
+    const char *a_string = NULL, *b_string = NULL;
+    const char *a_key = NULL, *b_key = NULL;
+    size_t a_count = 0, b_count = 0, i = 0;
+    JSON_Value_Type a_type, b_type;
+    a_type = json_value_get_type(a);
+    b_type = json_value_get_type(b);
+    if (a_type != b_type)
+        return 0;
+    switch (a_type) {
+        case JSONArray:
+            a_array = json_value_get_array(a);
+            b_array = json_value_get_array(b);
+            a_count = json_array_get_count(a_array);
+            b_count = json_array_get_count(b_array);
+            if (a_count != b_count)
+                return 0;
+            for (i = 0; i < a_count; i++) {
+                if (!are_values_equal(json_array_get_value(a_array, i), json_array_get_value(b_array, i)))
+                    return 0;
+            }
+            return 1;
+        case JSONObject:
+            a_object = json_value_get_object(a);
+            b_object = json_value_get_object(b);
+            a_count = json_object_get_count(a_object);
+            b_count = json_object_get_count(b_object);
+            if (a_count != b_count)
+                return 0;
+            for (i = 0; i < a_count; i++) {
+                a_key = json_object_get_name(a_object, i);
+                b_key = json_object_get_name(b_object, i);
+                if (!STREQ(a_key, b_key))
+                    return 0;
+                if (!are_values_equal(json_object_get_value(a_object, a_key), json_object_get_value(b_object, b_key)))
+                    return 0;
+            }
+            return 1;
+        case JSONString:
+            a_string = json_value_get_string(a);
+            b_string = json_value_get_string(b);
+            return STREQ(a_string, b_string);
+        case JSONBoolean:
+            return json_value_get_boolean(a) == json_value_get_boolean(b);
+        case JSONNumber:
+            return json_value_get_number(a) == json_value_get_number(b);
+        case JSONError:
+            return 1;
+        case JSONNull:
+            return 1;
+        default:
+            return 1;
+    }
 }
