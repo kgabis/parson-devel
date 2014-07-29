@@ -18,7 +18,7 @@ and copy parson.h and parson.c to you source code tree.
 
 Run ```make test``` to compile and run tests.
 
-##Parsing JSON Example
+##Parsing JSON
 Here is a function, which prints basic commit info (date, sha and author) from a github repository.  It's also included in tests.c file, you can just uncomment and run it.
 ```c
 void print_commits_info(const char *username, const char *repo) {
@@ -74,7 +74,7 @@ Date       SHA        Author
 ...
 ```
 
-##Creating JSON values Example
+##Creating JSON values in code
 Creating JSON values is very simple thanks to the dot notation. Object hierarchy is automatically created when addressing specific fields. In the following example I create a simple JSON value containing basic information about a person.
 ```c
     JSON_Value *root_value = json_value_init_object();
