@@ -26,12 +26,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #define TEST(A) printf("%-72s-",#A);              \
                 if(A){puts(" OK");tests_passed++;} \
                 else{puts(" FAIL");tests_failed++;}
 #define STREQ(A, B) ((A) && (B) ? strcmp((A), (B)) == 0 : 0)
 
+#define EPSILON (0.000001)
 
 void test_suite_1(void);
 void test_suite_2(JSON_Value *value);
@@ -39,6 +41,7 @@ void test_suite_2_no_comments(void);
 void test_suite_2_with_comments(void);
 void test_suite_3(void);
 void test_suite_4(void);
+void test_suite_5(void);
 
 char *read_file(const char *filename);
 void print_commits_info(const char *username, const char *repo);
@@ -55,6 +58,7 @@ int main() {
     test_suite_2_with_comments();
     test_suite_3();
     test_suite_4();
+    test_suite_5();
     printf("Tests failed: %d\n", tests_failed);
     printf("Tests passed: %d\n", tests_passed);
     return 0;
@@ -64,17 +68,25 @@ int main() {
 void test_suite_1(void) {
     JSON_Value *val;
     TEST((val = json_parse_file("tests/test_1_1.txt")) != NULL);
-    if (val) { json_value_free(val); }
+    TEST(are_values_equal(json_parse_string(json_serialize(val)), val));
+    if (val) { json_value_free(val);
+    }
     TEST((val = json_parse_file("tests/test_1_2.txt")) != NULL);
+    TEST(are_values_equal(json_parse_string(json_serialize(val)), val));
+
     if (val) { json_value_free(val); }
     TEST((val = json_parse_file("tests/test_1_3.txt")) != NULL);
+    TEST(are_values_equal(json_parse_string(json_serialize(val)), val));
     if (val) { json_value_free(val); }
     
     TEST((val = json_parse_file_with_comments("tests/test_1_1.txt")) != NULL);
+    TEST(are_values_equal(json_parse_string(json_serialize(val)), val));
     if (val) { json_value_free(val); }
     TEST((val = json_parse_file_with_comments("tests/test_1_2.txt")) != NULL);
+    TEST(are_values_equal(json_parse_string(json_serialize(val)), val));
     if (val) { json_value_free(val); }
     TEST((val = json_parse_file_with_comments("tests/test_1_3.txt")) != NULL);
+    TEST(are_values_equal(json_parse_string(json_serialize(val)), val));
     if (val) { json_value_free(val); }
 
 }
@@ -148,6 +160,7 @@ void test_suite_2_no_comments(void) {
     printf("Testing %s:\n", filename);
     root_value = json_parse_file(filename);
     test_suite_2(root_value);
+    TEST(are_values_equal(root_value, json_parse_string(json_serialize(root_value))));
     json_value_free(root_value);
 }
 
@@ -157,6 +170,7 @@ void test_suite_2_with_comments(void) {
     printf("Testing %s:\n", filename);
     root_value = json_parse_file_with_comments(filename);
     test_suite_2(root_value);
+    TEST(are_values_equal(root_value, json_parse_string(json_serialize(root_value))));
     json_value_free(root_value);
 }
 
@@ -218,6 +232,28 @@ void test_suite_4() {
     a_copy = json_value_deep_copy(a);
     TEST(a_copy != NULL);
     TEST(are_values_equal(a, a_copy));
+}
+
+/* Test building json values from scratch */
+void test_suite_5(void) {
+    JSON_Value *val_from_file = json_parse_file("tests/test_5.txt");
+    
+    JSON_Value *val = json_value_init_object();
+    JSON_Object *obj = json_value_get_object(val);
+    json_object_set(obj, "first", json_value_init_string("John"));
+    json_object_set(obj, "last", json_value_init_string("Doe"));
+    json_object_set(obj, "age", json_value_init_number(25));
+    json_object_set(obj, "registered", json_value_init_boolean(1));
+    json_object_set(obj, "interests", json_value_init_array());
+    json_array_append(json_object_get_array(obj, "interests"), json_value_init_string("Writing"));
+    json_array_append(json_object_get_array(obj, "interests"), json_value_init_string("Mountain Biking"));
+    json_array_set(json_object_get_array(obj, "interests"), 0, json_value_init_string("Reading"));
+    json_object_dotset(obj, "favorites.color", json_value_init_string("blue"));
+    json_object_dotset(obj, "favorites.sport", json_value_init_string("running"));
+    json_object_dotset(obj, "favorites.fruit", json_value_init_string("apple"));
+    json_object_dotremove(obj, "favorites.fruit");
+
+    TEST(are_values_equal(val_from_file, val));
 }
 
 void print_commits_info(const char *username, const char *repo) {
@@ -307,7 +343,7 @@ int are_values_equal(const JSON_Value *a, const JSON_Value *b) {
         case JSONBoolean:
             return json_value_get_boolean(a) == json_value_get_boolean(b);
         case JSONNumber:
-            return json_value_get_number(a) == json_value_get_number(b);
+            return fabs(json_value_get_number(a) - json_value_get_number(b)) < EPSILON;
         case JSONError:
             return 1;
         case JSONNull:

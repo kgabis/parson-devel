@@ -45,7 +45,6 @@ typedef enum json_value_type {
     JSONArray   = 5,
     JSONBoolean = 6
 } JSON_Value_Type;
-
    
 /* Parses first JSON value in a file, returns NULL in case of error */
 JSON_Value  * json_parse_file(const char *filename);
@@ -61,7 +60,15 @@ JSON_Value  * json_parse_string(const char *string);
     returns NULL in case of error */
 JSON_Value  * json_parse_string_with_comments(const char *string);
     
-/* JSON Object */
+/* Serialization */
+size_t json_serialization_size_in_bytes(const JSON_Value *value);
+int    json_serialize_to_buffer(const JSON_Value *value, char *buf, size_t buf_size_in_bytes);
+char * json_serialize(const JSON_Value *value);
+void   json_free_serialization_string(char *string);
+    
+/*
+ * JSON Object
+ */
 JSON_Value  * json_object_get_value  (const JSON_Object *object, const char *name);
 const char  * json_object_get_string (const JSON_Object *object, const char *name);
 JSON_Object * json_object_get_object (const JSON_Object *object, const char *name);
@@ -84,7 +91,25 @@ int           json_object_dotget_boolean(const JSON_Object *object, const char *
 size_t        json_object_get_count(const JSON_Object *object);
 const char  * json_object_get_name (const JSON_Object *object, size_t index);
     
-/* JSON Array */
+/* Functions below return 0 on success and -1 on failure. */
+/* Creates new name-value pair or frees and replaces old value with new one. */
+int           json_object_set(JSON_Object *object, const char *name, JSON_Value *value);
+    
+/* Works like dotget functions, but creates whole hierarchy if necessary. */
+int           json_object_dotset(JSON_Object *object, const char *name, JSON_Value *value);
+
+/* Frees and removes name-value pair */
+int           json_object_remove(JSON_Object *object, const char *name);
+
+/* Works like dotget function, but removes name-value pair only on exact match. */
+int           json_object_dotremove(JSON_Object *object, const char *key);
+
+/* Removes all name-value pairs in object */
+int           json_object_clear(JSON_Object *object);
+    
+/* 
+ *JSON Array 
+ */
 JSON_Value  * json_array_get_value  (const JSON_Array *array, size_t index);
 const char  * json_array_get_string (const JSON_Array *array, size_t index);
 JSON_Object * json_array_get_object (const JSON_Array *array, size_t index);
@@ -93,16 +118,42 @@ double        json_array_get_number (const JSON_Array *array, size_t index);
 int           json_array_get_boolean(const JSON_Array *array, size_t index);
 size_t        json_array_get_count  (const JSON_Array *array);
     
-/* JSON Value */
+/* Functions below return 0 on success and -1 on failure. */
+
+/* Frees and removes value at given index, does nothing and returns error (-1) if index doesn't exist.
+ * Order of values in array may change during execution.  */
+int           json_array_remove(JSON_Array *array, size_t i);
+
+/* Frees and removes from array value at given index and replaces it with given one.
+ * Does nothing and returns error (-1) if index doesn't exist. */
+int           json_array_set(JSON_Array *array, size_t i, JSON_Value *value);
+    
+/* Frees and removes all values from array */
+int           json_array_clear(JSON_Array *array);
+
+/* Appends new value at the end of array. */
+int           json_array_append(JSON_Array *array, JSON_Value *value);
+
+    
+/*
+ *JSON Value
+ */
+JSON_Value *    json_value_init_object(void);
+JSON_Value *    json_value_init_array(void);
+JSON_Value *    json_value_init_string(const char *string); /* copies passed string */
+JSON_Value *    json_value_init_number(double number);
+JSON_Value *    json_value_init_boolean(int boolean);
+JSON_Value *    json_value_init_null(void);
+JSON_Value *    json_value_deep_copy  (const JSON_Value *value);
+void            json_value_free       (JSON_Value *value);
+
 JSON_Value_Type json_value_get_type   (const JSON_Value *value);
 JSON_Object *   json_value_get_object (const JSON_Value *value);
 JSON_Array  *   json_value_get_array  (const JSON_Value *value);
 const char  *   json_value_get_string (const JSON_Value *value);
 double          json_value_get_number (const JSON_Value *value);
 int             json_value_get_boolean(const JSON_Value *value);
-void            json_value_free       (JSON_Value *value);
-JSON_Value *    json_value_deep_copy  (const JSON_Value *value);
-
+    
 #ifdef __cplusplus
 }
 #endif

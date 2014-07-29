@@ -1,0 +1,11 @@
+{
+  "first": "John",
+  "last": "Doe",
+  "age": 25,
+  "registered": true,
+  "interests": [ "Reading", "Mountain Biking" ],
+  "favorites": {
+    "color": "blue",
+    "sport": "running"
+  }
+}
