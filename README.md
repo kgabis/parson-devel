@@ -86,7 +86,7 @@ Creating JSON values is very simple thanks to the dot notation. Object hierarchy
     puts(json_serialize(root_value));
 ```
 
-Created value:
+Created value (after formatting outside parson):
 ```
 {  
    "name":"John Smith",
