@@ -66,6 +66,9 @@ int    json_serialize_to_buffer(const JSON_Value *value, char *buf, size_t buf_s
 char * json_serialize(const JSON_Value *value);
 void   json_free_serialization_string(char *string);
     
+/* Verification */
+int json_verify(const JSON_Value *schema, const JSON_Value *value);
+    
 /*
  * JSON Object
  */

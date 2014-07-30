@@ -42,6 +42,7 @@ void test_suite_2_with_comments(void);
 void test_suite_3(void);
 void test_suite_4(void);
 void test_suite_5(void);
+void test_suite_6(void);
 
 char *read_file(const char *filename);
 void print_commits_info(const char *username, const char *repo);
@@ -59,6 +60,7 @@ int main() {
     test_suite_3();
     test_suite_4();
     test_suite_5();
+    test_suite_6();
     printf("Tests failed: %d\n", tests_failed);
     printf("Tests passed: %d\n", tests_passed);
     return 0;
@@ -254,6 +256,19 @@ void test_suite_5(void) {
     json_object_dotremove(obj, "favorites.fruit");
 
     TEST(are_values_equal(val_from_file, val));
+}
+
+/* Test schema verification */
+void test_suite_6(void) {
+    JSON_Value *val_from_file = json_parse_file("tests/test_5.txt");
+    JSON_Value *schema = json_value_init_object();
+    JSON_Object *obj = json_value_get_object(schema);
+    json_object_set(obj, "first", json_value_init_string(""));
+    json_object_set(obj, "last", json_value_init_string(""));
+    json_object_set(obj, "age", json_value_init_number(0));
+    TEST(json_verify(schema, val_from_file));
+    json_object_set(obj, "age", json_value_init_string(""));
+    TEST(json_verify(schema, val_from_file) == 0);
 }
 
 void print_commits_info(const char *username, const char *repo) {
