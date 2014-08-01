@@ -34,7 +34,7 @@
 #define ARRAY_MAX_CAPACITY    122880 /* 15*(2^13) */
 #define OBJECT_MAX_CAPACITY      960 /* 15*(2^6)  */
 #define MAX_NESTING               19
-#define NUMBER_SERIALIZATION_FORMAT "%f"
+#define DOUBLE_SERIALIZATION_FORMAT "%f"
 
 #define SIZEOF_TOKEN(a)       (sizeof(a) - 1)
 #define SKIP_CHAR(str)        ((*str)++)
@@ -603,7 +603,7 @@ static size_t json_serialization_size_in_bytes_r(const JSON_Value *value, char *
     JSON_Array *array = NULL;
     JSON_Object *object = NULL;
     size_t i = 0, count = 0;
-    
+    double num = 0.0;
     switch (json_value_get_type(value)) {
         case JSONArray:
             array = json_value_get_array(value);
@@ -636,7 +636,10 @@ static size_t json_serialization_size_in_bytes_r(const JSON_Value *value, char *
             else
                 return 5; /* strlen("false"); */
         case JSONNumber:
-            return (size_t)sprintf(buf, NUMBER_SERIALIZATION_FORMAT, json_value_get_number(value));
+            num = json_value_get_number(value);
+            if (num == ((double)(int)num) ) /*  check if num is integer */
+                return (size_t)sprintf(buf, "%d", (int)num);
+            return (size_t)sprintf(buf, DOUBLE_SERIALIZATION_FORMAT, num);
         case JSONNull:
             return 4; /* strlen("null"); */
         case JSONError:
@@ -653,7 +656,7 @@ char* json_serialize_to_buffer_r(const JSON_Value *value, char *buf)
     JSON_Array *array = NULL;
     JSON_Object *object = NULL;
     size_t i = 0, count = 0;
-    
+    double num = 0.0;
     switch (json_value_get_type(value)) {
         case JSONArray:
             array = json_value_get_array(value);
@@ -694,7 +697,12 @@ char* json_serialize_to_buffer_r(const JSON_Value *value, char *buf)
             }
             return buf;
         case JSONNumber:
-            PRINTF_AND_SKIP(buf, "%f", json_value_get_number(value));
+            num = json_value_get_number(value);
+            if (num == ((double)(int)num)) { /*  check if num is integer */
+                PRINTF_AND_SKIP(buf, "%d", (int)num);
+            } else {
+                PRINTF_AND_SKIP(buf, DOUBLE_SERIALIZATION_FORMAT, num);
+            }
             return buf;
         case JSONNull:
             PRINT_AND_SKIP(buf, "null");
@@ -1085,7 +1093,7 @@ int json_array_remove(JSON_Array *array, size_t ix) {
     return PARSON_SUCCESS;
 }
 
-int json_array_set(JSON_Array *array, size_t ix, JSON_Value *value) {
+int json_array_replace(JSON_Array *array, size_t ix, JSON_Value *value) {
     if (array == NULL || ix >= json_array_get_count(array)) {
         return PARSON_ERROR;
     }
@@ -1232,8 +1240,7 @@ int json_verify(const JSON_Value *schema, const JSON_Value *value) {
             count = json_array_get_count(schema_array);
             if (count == 0)
                 return 1; /* Empty array allows all types */
-            else if (count > 1)
-                return 0; /* Otherwise array schema must have ONE value */
+            /* Get first value from array, rest is ignored */
             temp_schema_value = json_array_get_value(schema_array, 0);
             for (i = 0; i < json_array_get_count(value_array); i++) {
                 temp_value = json_array_get_value(value_array, i);
@@ -1265,4 +1272,28 @@ int json_verify(const JSON_Value *schema, const JSON_Value *value) {
         case JSONError: default:
             return 0;
     }
+}
+
+JSON_Value_Type json_type(const JSON_Value *value) {
+    return json_value_get_type(value);
+}
+
+JSON_Object * json_object (const JSON_Value *value) {
+    return json_value_get_object(value);
+}
+
+JSON_Array  * json_array  (const JSON_Value *value) {
+    return json_value_get_array(value);
+}
+
+const char  * json_string (const JSON_Value *value) {
+    return json_value_get_string(value);
+}
+
+double json_number (const JSON_Value *value) {
+    return json_value_get_number(value);
+}
+
+int json_boolean(const JSON_Value *value) {
+    return json_value_get_boolean(value);
 }

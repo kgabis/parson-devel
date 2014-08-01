@@ -249,7 +249,7 @@ void test_suite_5(void) {
     json_object_set(obj, "interests", json_value_init_array());
     json_array_append(json_object_get_array(obj, "interests"), json_value_init_string("Writing"));
     json_array_append(json_object_get_array(obj, "interests"), json_value_init_string("Mountain Biking"));
-    json_array_set(json_object_get_array(obj, "interests"), 0, json_value_init_string("Reading"));
+    json_array_replace(json_object_get_array(obj, "interests"), 0, json_value_init_string("Reading"));
     json_object_dotset(obj, "favorites.color", json_value_init_string("blue"));
     json_object_dotset(obj, "favorites.sport", json_value_init_string("running"));
     json_object_dotset(obj, "favorites.fruit", json_value_init_string("apple"));
@@ -315,7 +315,7 @@ int are_values_equal(const JSON_Value *a, const JSON_Value *b) {
     JSON_Object *a_object = NULL, *b_object = NULL;
     JSON_Array *a_array = NULL, *b_array = NULL;
     const char *a_string = NULL, *b_string = NULL;
-    const char *a_key = NULL, *b_key = NULL;
+    const char *key = NULL;
     size_t a_count = 0, b_count = 0, i = 0;
     JSON_Value_Type a_type, b_type;
     a_type = json_value_get_type(a);
@@ -343,11 +343,8 @@ int are_values_equal(const JSON_Value *a, const JSON_Value *b) {
             if (a_count != b_count)
                 return 0;
             for (i = 0; i < a_count; i++) {
-                a_key = json_object_get_name(a_object, i);
-                b_key = json_object_get_name(b_object, i);
-                if (!STREQ(a_key, b_key))
-                    return 0;
-                if (!are_values_equal(json_object_get_value(a_object, a_key), json_object_get_value(b_object, b_key)))
+                key = json_object_get_name(a_object, i);
+                if (!are_values_equal(json_object_get_value(a_object, key), json_object_get_value(b_object, key)))
                     return 0;
             }
             return 1;

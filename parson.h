@@ -129,7 +129,7 @@ int           json_array_remove(JSON_Array *array, size_t i);
 
 /* Frees and removes from array value at given index and replaces it with given one.
  * Does nothing and returns error (-1) if index doesn't exist. */
-int           json_array_set(JSON_Array *array, size_t i, JSON_Value *value);
+int           json_array_replace(JSON_Array *array, size_t i, JSON_Value *value);
     
 /* Frees and removes all values from array */
 int           json_array_clear(JSON_Array *array);
@@ -156,6 +156,14 @@ JSON_Array  *   json_value_get_array  (const JSON_Value *value);
 const char  *   json_value_get_string (const JSON_Value *value);
 double          json_value_get_number (const JSON_Value *value);
 int             json_value_get_boolean(const JSON_Value *value);
+
+/* Same as above, but shorter */
+JSON_Value_Type json_type   (const JSON_Value *value);
+JSON_Object *   json_object (const JSON_Value *value);
+JSON_Array  *   json_array  (const JSON_Value *value);
+const char  *   json_string (const JSON_Value *value);
+double          json_number (const JSON_Value *value);
+int             json_boolean(const JSON_Value *value);
     
 #ifdef __cplusplus
 }
