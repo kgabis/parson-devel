@@ -71,11 +71,10 @@ void test_suite_1(void) {
     JSON_Value *val;
     TEST((val = json_parse_file("tests/test_1_1.txt")) != NULL);
     TEST(are_values_equal(json_parse_string(json_serialize(val)), val));
-    if (val) { json_value_free(val);
-    }
+    if (val) { json_value_free(val);    }
+
     TEST((val = json_parse_file("tests/test_1_2.txt")) != NULL);
     TEST(are_values_equal(json_parse_string(json_serialize(val)), val));
-
     if (val) { json_value_free(val); }
     TEST((val = json_parse_file("tests/test_1_3.txt")) != NULL);
     TEST(are_values_equal(json_parse_string(json_serialize(val)), val));
@@ -90,7 +89,6 @@ void test_suite_1(void) {
     TEST((val = json_parse_file_with_comments("tests/test_1_3.txt")) != NULL);
     TEST(are_values_equal(json_parse_string(json_serialize(val)), val));
     if (val) { json_value_free(val); }
-
 }
 
 /* Testing correctness of parsed values */
@@ -142,11 +140,11 @@ void test_suite_2(JSON_Value *root_value) {
     TEST(json_object_dotget_value(root_object, "") == NULL);
     
     array = json_object_dotget_array(root_object, "object.nested array");
+    TEST(array != NULL);
+    TEST(json_array_get_count(array) > 1);
     if (array != NULL && json_array_get_count(array) > 1) {
         TEST(STREQ(json_array_get_string(array, 0), "lorem"));
         TEST(STREQ(json_array_get_string(array, 1), "ipsum"));
-    } else {
-        tests_failed++;
     }
     TEST(json_object_dotget_boolean(root_object, "nested true"));
     
