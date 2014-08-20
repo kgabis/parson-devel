@@ -1224,14 +1224,13 @@ int json_verify(const JSON_Value *schema, const JSON_Value *value) {
     JSON_Array *schema_array = NULL, *value_array = NULL;
     JSON_Object *schema_object = NULL, *value_object = NULL;
     JSON_Value_Type schema_type = JSONError, value_type = JSONError;
-    JSON_Value_Type array_element_type = JSONError;
     const char *key = NULL;
     size_t i = 0, count = 0;
     if (schema == NULL || value == NULL)
         return 0;
     schema_type = json_value_get_type(schema);
     value_type = json_value_get_type(value);
-    if (schema_type != value_type)
+    if (schema_type != value_type && schema_type != JSONNull) /* null represents all values */
         return 0;
     switch (schema_type) {
         case JSONArray:

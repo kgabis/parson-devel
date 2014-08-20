@@ -260,12 +260,13 @@ void test_suite_5(void) {
 void test_suite_6(void) {
     JSON_Value *val_from_file = json_parse_file("tests/test_5.txt");
     JSON_Value *schema = json_value_init_object();
-    JSON_Object *obj = json_value_get_object(schema);
-    json_object_set(obj, "first", json_value_init_string(""));
-    json_object_set(obj, "last", json_value_init_string(""));
-    json_object_set(obj, "age", json_value_init_number(0));
+    JSON_Object *schema_obj = json_value_get_object(schema);
+    json_object_set(schema_obj, "first", json_value_init_string(""));
+    json_object_set(schema_obj, "last", json_value_init_string(""));
+    json_object_set(schema_obj, "age", json_value_init_number(0));
+    json_object_set(schema_obj, "favorites", json_value_init_null());
     TEST(json_verify(schema, val_from_file));
-    json_object_set(obj, "age", json_value_init_string(""));
+    json_object_set(schema_obj, "age", json_value_init_string(""));
     TEST(json_verify(schema, val_from_file) == 0);
 }
 
