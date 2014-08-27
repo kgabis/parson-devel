@@ -20,6 +20,9 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
 */
+#ifdef _MSC_VER
+#define _CRT_SECURE_NO_WARNINGS
+#endif
 
 #include "parson.h"
 
@@ -950,7 +953,7 @@ JSON_Value * json_value_init_array(void) {
 }
 
 JSON_Value * json_value_init_string(const char *string) {
-    char *copy = strndup(string, strlen(string));
+    char *copy = parson_strndup(string, strlen(string));
     if (copy == NULL)
         return NULL;
     return json_value_init_string_no_copy(copy);
@@ -1068,11 +1071,16 @@ int json_serialize_to_buffer(const JSON_Value *value, char *buf, size_t buf_size
 }
 
 char * json_serialize(const JSON_Value *value) {
+    int serialization_result = PARSON_ERROR;
     size_t buf_size_bytes = json_serialization_size_in_bytes(value);
     char *buf = (char*)PARSON_MALLOC(buf_size_bytes);
     if (buf == NULL)
         return NULL;
-    json_serialize_to_buffer(value, buf, buf_size_bytes);
+    serialization_result = json_serialize_to_buffer(value, buf, buf_size_bytes);
+    if (serialization_result == PARSON_ERROR) {
+        json_free_serialization_string(buf);
+        return NULL;
+    }
     return buf;
 }
 
@@ -1146,7 +1154,7 @@ int json_object_dotset(JSON_Object *object, const char *name, JSON_Value *value)
     if (dot_pos == NULL) {
         return json_object_set(object, name, value);
     } else {
-        current_name = strndup(name, dot_pos - name);
+        current_name = parson_strndup(name, dot_pos - name);
         temp_obj = json_object_get_object(object, current_name);
         if (temp_obj == NULL) {
             new_value = json_value_init_object();
@@ -1194,7 +1202,7 @@ int json_object_dotremove(JSON_Object *object, const char *name) {
     if (dot_pos == NULL) {
         return json_object_remove(object, name);
     } else {
-        current_name = strndup(name, dot_pos - name);
+        current_name = parson_strndup(name, dot_pos - name);
         temp_obj = json_object_get_object(object, current_name);
         if (temp_obj == NULL) {
             PARSON_FREE(current_name);
