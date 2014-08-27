@@ -252,7 +252,7 @@ static int json_object_add(JSON_Object *object, const char *name, JSON_Value *va
     if (json_object_get_value(object, name) != NULL)
         return PARSON_ERROR;
     index = object->count;
-    object->names[index] = parson_strndup(name, strlen(name));
+    object->names[index] = parson_strdup(name);
     if (!object->names[index])
         return PARSON_ERROR;
     object->values[index] = value;
@@ -953,7 +953,7 @@ JSON_Value * json_value_init_array(void) {
 }
 
 JSON_Value * json_value_init_string(const char *string) {
-    char *copy = parson_strndup(string, strlen(string));
+    char *copy = parson_strdup(string);
     if (copy == NULL)
         return NULL;
     return json_value_init_string_no_copy(copy);
