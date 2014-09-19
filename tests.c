@@ -255,7 +255,9 @@ void test_suite_5(void) {
     json_object_dotset(obj, "favorites.sport", json_value_init_string("running"));
     json_object_dotset(obj, "favorites.fruit", json_value_init_string("apple"));
     json_object_dotremove(obj, "favorites.fruit");
-
+    json_object_set(obj, "utf string", json_value_init_string("\\u006corem\\u0020ipsum"));
+    json_object_set(obj, "utf-8 string", json_value_init_string("あいうえお"));
+    json_object_set(obj, "surrogate string", json_value_init_string("lorem\\uD834\\uDD1Eipsum\\uD834\\uDF67lorem"));
     TEST(are_values_equal(val_from_file, val));
 }
 
