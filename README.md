@@ -91,7 +91,7 @@ Created value (after formatting outside parson):
 ```
 {  
    "name":"John Smith",
-   "age":25.000000,
+   "age":25,
    "address":{  
       "city":"Cupertino"
    },
