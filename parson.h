@@ -61,13 +61,16 @@ JSON_Value  * json_parse_string(const char *string);
 JSON_Value  * json_parse_string_with_comments(const char *string);
     
 /* Serialization */
-size_t json_serialization_size_in_bytes(const JSON_Value *value);
+size_t json_serialization_size(const JSON_Value *value);
 int    json_serialize_to_buffer(const JSON_Value *value, char *buf, size_t buf_size_in_bytes);
 char * json_serialize(const JSON_Value *value);
 void   json_free_serialization_string(char *string);
+
+/* Comparing */
+int  json_value_equals(const JSON_Value *a, const JSON_Value *b);
     
 /* Verification */
-int json_verify(const JSON_Value *schema, const JSON_Value *value);
+int json_validate(const JSON_Value *schema, const JSON_Value *value);
     
 /*
  * JSON Object
@@ -141,14 +144,14 @@ int           json_array_append(JSON_Array *array, JSON_Value *value);
 /*
  *JSON Value
  */
-JSON_Value *    json_value_init_object(void);
-JSON_Value *    json_value_init_array(void);
-JSON_Value *    json_value_init_string(const char *string); /* copies passed string */
-JSON_Value *    json_value_init_number(double number);
+JSON_Value *    json_value_init_object (void);
+JSON_Value *    json_value_init_array  (void);
+JSON_Value *    json_value_init_string (const char *string); /* copies passed string */
+JSON_Value *    json_value_init_number (double number);
 JSON_Value *    json_value_init_boolean(int boolean);
-JSON_Value *    json_value_init_null(void);
-JSON_Value *    json_value_deep_copy  (const JSON_Value *value);
-void            json_value_free       (JSON_Value *value);
+JSON_Value *    json_value_init_null   (void);
+JSON_Value *    json_value_deep_copy   (const JSON_Value *value);
+void            json_value_free        (JSON_Value *value);
 
 JSON_Value_Type json_value_get_type   (const JSON_Value *value);
 JSON_Object *   json_value_get_object (const JSON_Value *value);

@@ -13,7 +13,7 @@ This is a version in development (hence -devel suffix), it contains some feature
 ##Installation
 Run the following code:
 ```
-git clone https://github.com/kgabis/parson.git
+git clone https://github.com/kgabis/parson-devel.git
 ```
 and copy parson.h and parson.c to you source code tree.
 
@@ -78,13 +78,13 @@ Date       SHA        Author
 ##Creating JSON values in code
 Creating JSON values is very simple thanks to the dot notation. Object hierarchy is automatically created when addressing specific fields. In the following example I create a simple JSON value containing basic information about a person.
 ```c
-    JSON_Value *root_value = json_value_init_object();
-    JSON_Object *root_object = json_value_get_object(root_value);
-    json_object_set(root_object, "name", json_value_init_string("John Smith"));
-    json_object_set(root_object, "age", json_value_init_number(25));
-    json_object_dotset(root_object, "address.city", json_value_init_string("Cupertino"));
-    json_object_dotset(root_object, "contact.emails", json_parse_string("[\"email@example.com\", \"email2@example.com\"]"));
-    puts(json_serialize(root_value));
+JSON_Value *root_value = json_value_init_object();
+JSON_Object *root_object = json_value_get_object(root_value);
+json_object_set(root_object, "name", json_value_init_string("John Smith"));
+json_object_set(root_object, "age", json_value_init_number(25));
+json_object_dotset(root_object, "address.city", json_value_init_string("Cupertino"));
+json_object_dotset(root_object, "contact.emails", json_parse_string("[\"email@example.com\", \"email2@example.com\"]"));
+puts(json_serialize(root_value));
 ```
 
 Created value (after formatting outside parson):

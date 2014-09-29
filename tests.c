@@ -29,27 +29,24 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
 
 #define TEST(A) printf("%-72s-",#A);              \
                 if(A){puts(" OK");tests_passed++;} \
                 else{puts(" FAIL");tests_failed++;}
 #define STREQ(A, B) ((A) && (B) ? strcmp((A), (B)) == 0 : 0)
 
-#define EPSILON (0.000001)
-
-void test_suite_1(void);
-void test_suite_2(JSON_Value *value);
+void test_suite_1(void); /* Test 3 files from json.org + serialization*/
+void test_suite_2(JSON_Value *value); /* Test correctness of parsed values */
 void test_suite_2_no_comments(void);
 void test_suite_2_with_comments(void);
-void test_suite_3(void);
-void test_suite_4(void);
-void test_suite_5(void);
-void test_suite_6(void);
+void test_suite_3(void); /* Test incorrect values */
+void test_suite_4(void); /* Test deep copy funtion */
+void test_suite_5(void); /* Test building json values from scratch */
+void test_suite_6(void); /* Test value comparing verification */
+void test_suite_7(void); /* Test schema validation */
 
 char *read_file(const char *filename);
 void print_commits_info(const char *username, const char *repo);
-int  are_values_equal(const JSON_Value *a, const JSON_Value *b);
 
 static int tests_passed;
 static int tests_failed;
@@ -64,37 +61,35 @@ int main() {
     test_suite_4();
     test_suite_5();
     test_suite_6();
+    test_suite_7();
     printf("Tests failed: %d\n", tests_failed);
     printf("Tests passed: %d\n", tests_passed);
     return 0;
 }
 
-/* 3 test files from json.org */
 void test_suite_1(void) {
     JSON_Value *val;
     TEST((val = json_parse_file("tests/test_1_1.txt")) != NULL);
-    TEST(are_values_equal(json_parse_string(json_serialize(val)), val));
-    if (val) { json_value_free(val);    }
-
+    TEST(json_value_equals(json_parse_string(json_serialize(val)), val));
+    if (val) { json_value_free(val); }
     TEST((val = json_parse_file("tests/test_1_2.txt")) != NULL);
-    TEST(are_values_equal(json_parse_string(json_serialize(val)), val));
+    TEST(json_value_equals(json_parse_string(json_serialize(val)), val));
     if (val) { json_value_free(val); }
     TEST((val = json_parse_file("tests/test_1_3.txt")) != NULL);
-    TEST(are_values_equal(json_parse_string(json_serialize(val)), val));
+    TEST(json_value_equals(json_parse_string(json_serialize(val)), val));
     if (val) { json_value_free(val); }
     
     TEST((val = json_parse_file_with_comments("tests/test_1_1.txt")) != NULL);
-    TEST(are_values_equal(json_parse_string(json_serialize(val)), val));
+    TEST(json_value_equals(json_parse_string(json_serialize(val)), val));
     if (val) { json_value_free(val); }
     TEST((val = json_parse_file_with_comments("tests/test_1_2.txt")) != NULL);
-    TEST(are_values_equal(json_parse_string(json_serialize(val)), val));
+    TEST(json_value_equals(json_parse_string(json_serialize(val)), val));
     if (val) { json_value_free(val); }
     TEST((val = json_parse_file_with_comments("tests/test_1_3.txt")) != NULL);
-    TEST(are_values_equal(json_parse_string(json_serialize(val)), val));
+    TEST(json_value_equals(json_parse_string(json_serialize(val)), val));
     if (val) { json_value_free(val); }
 }
 
-/* Testing correctness of parsed values */
 void test_suite_2(JSON_Value *root_value) {
     JSON_Object *root_object;
     JSON_Array *array;
@@ -160,24 +155,21 @@ void test_suite_2(JSON_Value *root_value) {
 void test_suite_2_no_comments(void) {
     const char *filename = "tests/test_2.txt";
     JSON_Value *root_value = NULL;
-    printf("Testing %s:\n", filename);
     root_value = json_parse_file(filename);
     test_suite_2(root_value);
-    TEST(are_values_equal(root_value, json_parse_string(json_serialize(root_value))));
+    TEST(json_value_equals(root_value, json_parse_string(json_serialize(root_value))));
     json_value_free(root_value);
 }
 
 void test_suite_2_with_comments(void) {
     const char *filename = "tests/test_2_comments.txt";
     JSON_Value *root_value = NULL;
-    printf("Testing %s:\n", filename);
     root_value = json_parse_file_with_comments(filename);
     test_suite_2(root_value);
-    TEST(are_values_equal(root_value, json_parse_string(json_serialize(root_value))));
+    TEST(json_value_equals(root_value, json_parse_string(json_serialize(root_value))));
     json_value_free(root_value);
 }
 
-/* Testing values, on which parsing should fail */
 void test_suite_3(void) {
     char nested_20x[] = "[[[[[[[[[[[[[[[[[[[[\"hi\"]]]]]]]]]]]]]]]]]]]]";
     puts("Testing invalid strings:");
@@ -225,19 +217,17 @@ void test_suite_3(void) {
     TEST(json_parse_string("[\"\\uDF67\\uD834\"]") == NULL); /* wrong order surrogate pair */
 }
 
-/* Test deep copy funtion */
 void test_suite_4() {
     const char *filename = "tests/test_2.txt";
     JSON_Value *a = NULL, *a_copy = NULL;
     printf("Testing %s:\n", filename);
     a = json_parse_file(filename);
-    TEST(are_values_equal(a, a)); /* test equality test */
+    TEST(json_value_equals(a, a)); /* test equality test */
     a_copy = json_value_deep_copy(a);
     TEST(a_copy != NULL);
-    TEST(are_values_equal(a, a_copy));
+    TEST(json_value_equals(a, a_copy));
 }
 
-/* Test building json values from scratch */
 void test_suite_5(void) {
     JSON_Value *val_from_file = json_parse_file("tests/test_5.txt");
     
@@ -258,11 +248,25 @@ void test_suite_5(void) {
     json_object_set(obj, "utf string", json_value_init_string("\\u006corem\\u0020ipsum"));
     json_object_set(obj, "utf-8 string", json_value_init_string("あいうえお"));
     json_object_set(obj, "surrogate string", json_value_init_string("lorem\\uD834\\uDD1Eipsum\\uD834\\uDF67lorem"));
-    TEST(are_values_equal(val_from_file, val));
+    TEST(json_value_equals(val_from_file, val));
 }
 
-/* Test schema verification */
 void test_suite_6(void) {
+    const char *filename = "tests/test_2.txt";
+    JSON_Value *a = NULL;
+    JSON_Value *b = NULL;
+    a = json_parse_file(filename);
+    b = json_parse_file(filename);
+    TEST(json_value_equals(a, b));
+    json_object_set(json_object(a), "string", json_value_init_string("eki"));
+    TEST(!json_value_equals(a, b));
+    a = json_value_deep_copy(b);
+    TEST(json_value_equals(a, b));
+    json_array_append(json_object_get_array(json_object(b), "string array"), json_value_init_number(1337));
+    TEST(!json_value_equals(a, b));
+}
+
+void test_suite_7(void) {
     JSON_Value *val_from_file = json_parse_file("tests/test_5.txt");
     JSON_Value *schema = json_value_init_object();
     JSON_Object *schema_obj = json_value_get_object(schema);
@@ -270,9 +274,9 @@ void test_suite_6(void) {
     json_object_set(schema_obj, "last", json_value_init_string(""));
     json_object_set(schema_obj, "age", json_value_init_number(0));
     json_object_set(schema_obj, "favorites", json_value_init_null());
-    TEST(json_verify(schema, val_from_file));
+    TEST(json_validate(schema, val_from_file));
     json_object_set(schema_obj, "age", json_value_init_string(""));
-    TEST(json_verify(schema, val_from_file) == 0);
+    TEST(json_validate(schema, val_from_file) == 0);
 }
 
 void print_commits_info(const char *username, const char *repo) {
@@ -313,58 +317,4 @@ void print_commits_info(const char *username, const char *repo) {
     /* cleanup code */
     json_value_free(root_value);
     system(cleanup_command);
-}
-
-int are_values_equal(const JSON_Value *a, const JSON_Value *b) {
-    JSON_Object *a_object = NULL, *b_object = NULL;
-    JSON_Array *a_array = NULL, *b_array = NULL;
-    const char *a_string = NULL, *b_string = NULL;
-    const char *key = NULL;
-    size_t a_count = 0, b_count = 0, i = 0;
-    JSON_Value_Type a_type, b_type;
-    a_type = json_value_get_type(a);
-    b_type = json_value_get_type(b);
-    if (a_type != b_type)
-        return 0;
-    switch (a_type) {
-        case JSONArray:
-            a_array = json_value_get_array(a);
-            b_array = json_value_get_array(b);
-            a_count = json_array_get_count(a_array);
-            b_count = json_array_get_count(b_array);
-            if (a_count != b_count)
-                return 0;
-            for (i = 0; i < a_count; i++) {
-                if (!are_values_equal(json_array_get_value(a_array, i), json_array_get_value(b_array, i)))
-                    return 0;
-            }
-            return 1;
-        case JSONObject:
-            a_object = json_value_get_object(a);
-            b_object = json_value_get_object(b);
-            a_count = json_object_get_count(a_object);
-            b_count = json_object_get_count(b_object);
-            if (a_count != b_count)
-                return 0;
-            for (i = 0; i < a_count; i++) {
-                key = json_object_get_name(a_object, i);
-                if (!are_values_equal(json_object_get_value(a_object, key), json_object_get_value(b_object, key)))
-                    return 0;
-            }
-            return 1;
-        case JSONString:
-            a_string = json_value_get_string(a);
-            b_string = json_value_get_string(b);
-            return STREQ(a_string, b_string);
-        case JSONBoolean:
-            return json_value_get_boolean(a) == json_value_get_boolean(b);
-        case JSONNumber:
-            return fabs(json_value_get_number(a) - json_value_get_number(b)) < EPSILON;
-        case JSONError:
-            return 1;
-        case JSONNull:
-            return 1;
-        default:
-            return 1;
-    }
 }

@@ -30,6 +30,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <math.h>
 
 #define PARSON_ERROR              -1 /* DO NOT CHANGE */
 #define PARSON_SUCCESS             0 /* DO NOT CHANGE */
@@ -119,13 +120,17 @@ static JSON_Value * parse_null_value(const char **string);
 static JSON_Value * parse_value(const char **string, size_t nesting);
 
 /* Serialization */
-static size_t json_serialization_size_in_bytes_r(const JSON_Value *value, char *buf);
+static size_t json_serialization_size_r(const JSON_Value *value, char *buf);
 static char * json_serialize_to_buffer_r(const JSON_Value *value, char *buf);
 static char * json_serialize_string(const char *string, char *buf);
 
 /* Various */
 static int try_realloc(void **ptr, size_t new_size) {
-    void *reallocated_ptr = PARSON_REALLOC(*ptr, new_size);
+    void *reallocated_ptr = NULL;
+    if (new_size == 0) {
+        return PARSON_ERROR;
+    }
+    reallocated_ptr = PARSON_REALLOC(*ptr, new_size);
     if (reallocated_ptr == NULL) {
         return PARSON_ERROR;
     }
@@ -605,7 +610,7 @@ static JSON_Value * parse_null_value(const char **string) {
 }
 
 /* Serialization */
-static size_t json_serialization_size_in_bytes_r(const JSON_Value *value, char *buf) {
+static size_t json_serialization_size_r(const JSON_Value *value, char *buf) {
     size_t result_size = 0;
     const char *key = NULL;
     JSON_Value *temp_value = NULL;
@@ -622,7 +627,7 @@ static size_t json_serialization_size_in_bytes_r(const JSON_Value *value, char *
                 result_size += count - 1; /* , between items */
             for (i = 0; i < count; i++) {
                 temp_value = json_array_get_value(array, i);
-                result_size += json_serialization_size_in_bytes_r(temp_value, buf);
+                result_size += json_serialization_size_r(temp_value, buf);
             }
             return result_size;
         case JSONObject:
@@ -634,7 +639,7 @@ static size_t json_serialization_size_in_bytes_r(const JSON_Value *value, char *
             for (i = 0; i < count; i++) {
                 key = json_object_get_name(object, i);
                 result_size += parson_strlen(key) + 2; /* string and quotes */
-                result_size += json_serialization_size_in_bytes_r(json_object_get_value(object, key), buf);
+                result_size += json_serialization_size_r(json_object_get_value(object, key), buf);
             }
             return result_size;
         case JSONString:
@@ -1059,14 +1064,14 @@ JSON_Value * json_value_deep_copy(const JSON_Value *value) {
     }
 }
 
-size_t json_serialization_size_in_bytes(const JSON_Value *value) {
+size_t json_serialization_size(const JSON_Value *value) {
     char buf[1100]; /* recursively allocating buffer on stack is a bad idea, so let's do it only once */
-    return json_serialization_size_in_bytes_r(value, buf) + 1;
+    return json_serialization_size_r(value, buf) + 1;
 }
 
 int json_serialize_to_buffer(const JSON_Value *value, char *buf, size_t buf_size_in_bytes) {
     char *serialization_result = NULL;
-    size_t needed_size_in_bytes = json_serialization_size_in_bytes(value);
+    size_t needed_size_in_bytes = json_serialization_size(value);
     if (buf_size_in_bytes < needed_size_in_bytes) {
         return PARSON_ERROR;
     }
@@ -1078,7 +1083,7 @@ int json_serialize_to_buffer(const JSON_Value *value, char *buf, size_t buf_size
 
 char * json_serialize(const JSON_Value *value) {
     int serialization_result = PARSON_ERROR;
-    size_t buf_size_bytes = json_serialization_size_in_bytes(value);
+    size_t buf_size_bytes = json_serialization_size(value);
     char *buf = (char*)PARSON_MALLOC(buf_size_bytes);
     if (buf == NULL)
         return NULL;
@@ -1233,7 +1238,7 @@ int json_object_clear(JSON_Object *object) {
     return PARSON_SUCCESS;
 }
 
-int json_verify(const JSON_Value *schema, const JSON_Value *value) {
+int json_validate(const JSON_Value *schema, const JSON_Value *value) {
     JSON_Value *temp_schema_value = NULL, *temp_value = NULL;
     JSON_Array *schema_array = NULL, *value_array = NULL;
     JSON_Object *schema_object = NULL, *value_object = NULL;
@@ -1257,7 +1262,7 @@ int json_verify(const JSON_Value *schema, const JSON_Value *value) {
             temp_schema_value = json_array_get_value(schema_array, 0);
             for (i = 0; i < json_array_get_count(value_array); i++) {
                 temp_value = json_array_get_value(value_array, i);
-                if (json_verify(temp_schema_value, temp_value) == 0) {
+                if (json_validate(temp_schema_value, temp_value) == 0) {
                     return 0;
                 }
             }
@@ -1276,7 +1281,7 @@ int json_verify(const JSON_Value *schema, const JSON_Value *value) {
                 temp_value = json_object_get_value(value_object, key);
                 if (temp_value == NULL)
                     return 0;
-                if (json_verify(temp_schema_value, temp_value) == 0)
+                if (json_validate(temp_schema_value, temp_value) == 0)
                     return 0;
             }
             return 1;
@@ -1284,6 +1289,60 @@ int json_verify(const JSON_Value *schema, const JSON_Value *value) {
             return 1; /* equality already tested before switch */
         case JSONError: default:
             return 0;
+    }
+}
+
+int json_value_equals(const JSON_Value *a, const JSON_Value *b) {
+    JSON_Object *a_object = NULL, *b_object = NULL;
+    JSON_Array *a_array = NULL, *b_array = NULL;
+    const char *a_string = NULL, *b_string = NULL;
+    const char *key = NULL;
+    size_t a_count = 0, b_count = 0, i = 0;
+    JSON_Value_Type a_type, b_type;
+    a_type = json_value_get_type(a);
+    b_type = json_value_get_type(b);
+    if (a_type != b_type)
+        return 0;
+    switch (a_type) {
+        case JSONArray:
+            a_array = json_value_get_array(a);
+            b_array = json_value_get_array(b);
+            a_count = json_array_get_count(a_array);
+            b_count = json_array_get_count(b_array);
+            if (a_count != b_count)
+                return 0;
+            for (i = 0; i < a_count; i++) {
+                if (!json_value_equals(json_array_get_value(a_array, i), json_array_get_value(b_array, i)))
+                    return 0;
+            }
+            return 1;
+        case JSONObject:
+            a_object = json_value_get_object(a);
+            b_object = json_value_get_object(b);
+            a_count = json_object_get_count(a_object);
+            b_count = json_object_get_count(b_object);
+            if (a_count != b_count)
+                return 0;
+            for (i = 0; i < a_count; i++) {
+                key = json_object_get_name(a_object, i);
+                if (!json_value_equals(json_object_get_value(a_object, key), json_object_get_value(b_object, key)))
+                    return 0;
+            }
+            return 1;
+        case JSONString:
+            a_string = json_value_get_string(a);
+            b_string = json_value_get_string(b);
+            return strcmp(a_string, b_string) == 0;
+        case JSONBoolean:
+            return json_value_get_boolean(a) == json_value_get_boolean(b);
+        case JSONNumber:
+            return fabs(json_value_get_number(a) - json_value_get_number(b)) < 0.000001; /* EPSILON */
+        case JSONError:
+            return 1;
+        case JSONNull:
+            return 1;
+        default:
+            return 1;
     }
 }
 
