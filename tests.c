@@ -44,16 +44,18 @@ void test_suite_4(void); /* Test deep copy funtion */
 void test_suite_5(void); /* Test building json values from scratch */
 void test_suite_6(void); /* Test value comparing verification */
 void test_suite_7(void); /* Test schema validation */
+void test_suite_8(void); /* Test serialization to file */
 
-char *read_file(const char *filename);
 void print_commits_info(const char *username, const char *repo);
+void persistence_example(void);
 
 static int tests_passed;
 static int tests_failed;
 
 int main() {
-    /* Example function from readme file:       */
+    /* Example functions from readme file:      */
     /* print_commits_info("torvalds", "linux"); */
+    /* persistence_example(); */
     test_suite_1();
     test_suite_2_no_comments();
     test_suite_2_with_comments();
@@ -62,6 +64,7 @@ int main() {
     test_suite_5();
     test_suite_6();
     test_suite_7();
+    test_suite_8();
     printf("Tests failed: %d\n", tests_failed);
     printf("Tests passed: %d\n", tests_passed);
     return 0;
@@ -279,6 +282,18 @@ void test_suite_7(void) {
     TEST(json_validate(schema, val_from_file) == 0);
 }
 
+void test_suite_8(void) {
+    const char *filename = "tests/test_2.txt";
+    const char *temp_filename = "tests/test_2_serialized.txt";
+    JSON_Value *a = NULL;
+    JSON_Value *b = NULL;
+    a = json_parse_file(filename);
+    TEST(json_serialize_to_file(a, temp_filename) == 0);
+    b = json_parse_file(temp_filename);
+    TEST(json_value_equals(a, b));
+    remove(temp_filename);
+}
+
 void print_commits_info(const char *username, const char *repo) {
     JSON_Value *root_value;
     JSON_Array *commits;
@@ -317,4 +332,21 @@ void print_commits_info(const char *username, const char *repo) {
     /* cleanup code */
     json_value_free(root_value);
     system(cleanup_command);
+}
+
+void persistence_example() {
+    JSON_Value *schema = json_parse_string("{\"name\":\"\"}");
+    JSON_Value *user_data = json_parse_file("user_data.json");
+    char buf[256];
+    const char *name = NULL;
+    if (!user_data || !json_validate(schema, user_data)) {
+        puts("Enter your name:");
+        scanf("%s", buf);
+        user_data = json_value_init_object();
+        json_object_set_string(json_object(user_data), "name", buf);
+        json_serialize_to_file(user_data, "user_data.json");
+    }
+    name = json_object_get_string(json_object(user_data), "name");
+    printf("Hello, %s.", name);
+    return;
 }

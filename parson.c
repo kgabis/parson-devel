@@ -1081,6 +1081,26 @@ int json_serialize_to_buffer(const JSON_Value *value, char *buf, size_t buf_size
     return PARSON_SUCCESS;
 }
 
+int json_serialize_to_file(const JSON_Value *value, const char *filename) {
+    int return_code = PARSON_SUCCESS;
+    FILE *fp = NULL;
+    char *serialized_string = json_serialize(value);
+    if (serialized_string == NULL) {
+        return PARSON_ERROR;
+    }
+    fp = fopen (filename, "w");
+    if (fp != NULL) {
+        if (fputs (serialized_string, fp) == EOF) {
+            return_code = PARSON_ERROR;
+        }
+        if (fclose (fp) == EOF) {
+            return_code = PARSON_ERROR;
+        }
+    }
+    json_free_serialization_string(serialized_string);
+    return return_code;
+}
+
 char * json_serialize(const JSON_Value *value) {
     int serialization_result = PARSON_ERROR;
     size_t buf_size_bytes = json_serialization_size(value);
@@ -1133,9 +1153,25 @@ int json_array_clear(JSON_Array *array) {
 }
 
 int json_array_append(JSON_Array *array, JSON_Value *value) {
-    if (array == NULL)
+    if (array == NULL || value == NULL)
         return PARSON_ERROR;
     return json_array_add(array, value);
+}
+
+int json_array_append_string(JSON_Array *array, const char *string) {
+    return json_array_append(array, json_value_init_string(string));
+}
+
+int json_array_append_number(JSON_Array *array, double number) {
+    return json_array_append(array, json_value_init_number(number));
+}
+
+int json_array_append_boolean(JSON_Array *array, int boolean) {
+    return json_array_append(array, json_value_init_boolean(boolean));
+}
+
+int json_array_append_null(JSON_Array *array) {
+    return json_array_append(array, json_value_init_null());
 }
 
 int json_object_set(JSON_Object *object, const char *name, JSON_Value *value) {
@@ -1155,6 +1191,22 @@ int json_object_set(JSON_Object *object, const char *name, JSON_Value *value) {
     }
     json_object_add(object, name, value); /* add new key value pair */
     return PARSON_SUCCESS;
+}
+
+int json_object_set_string(JSON_Object *object, const char *name, const char *string) {
+    return json_object_set(object, name, json_value_init_string(string));
+}
+
+int json_object_set_number(JSON_Object *object, const char *name, double number) {
+    return json_object_set(object, name, json_value_init_number(number));
+}
+
+int json_object_set_boolean(JSON_Object *object, const char *name, int boolean) {
+    return json_object_set(object, name, json_value_init_boolean(boolean));
+}
+
+int json_object_set_null(JSON_Object *object, const char *name) {
+    return json_object_set(object, name, json_value_init_null());
 }
 
 int json_object_dotset(JSON_Object *object, const char *name, JSON_Value *value) {
@@ -1184,6 +1236,22 @@ int json_object_dotset(JSON_Object *object, const char *name, JSON_Value *value)
         return json_object_dotset(temp_obj, dot_pos + 1, value);
     }
     return PARSON_ERROR;
+}
+
+int json_object_dotset_string(JSON_Object *object, const char *name, const char *string) {
+    return json_object_dotset(object, name, json_value_init_string(string));
+}
+
+int json_object_dotset_number(JSON_Object *object, const char *name, double number) {
+    return json_object_dotset(object, name, json_value_init_number(number));
+}
+
+int json_object_dotset_boolean(JSON_Object *object, const char *name, int boolean) {
+    return json_object_dotset(object, name, json_value_init_boolean(boolean));
+}
+
+int json_object_dotset_null(JSON_Object *object, const char *name) {
+    return json_object_dotset(object, name, json_value_init_null());
 }
 
 int json_object_remove(JSON_Object *object, const char *name) {
