@@ -236,21 +236,21 @@ void test_suite_5(void) {
     
     JSON_Value *val = json_value_init_object();
     JSON_Object *obj = json_value_get_object(val);
-    json_object_set(obj, "first", json_value_init_string("John"));
-    json_object_set(obj, "last", json_value_init_string("Doe"));
-    json_object_set(obj, "age", json_value_init_number(25));
-    json_object_set(obj, "registered", json_value_init_boolean(1));
-    json_object_set(obj, "interests", json_value_init_array());
-    json_array_append(json_object_get_array(obj, "interests"), json_value_init_string("Writing"));
-    json_array_append(json_object_get_array(obj, "interests"), json_value_init_string("Mountain Biking"));
-    json_array_replace(json_object_get_array(obj, "interests"), 0, json_value_init_string("Reading"));
-    json_object_dotset(obj, "favorites.color", json_value_init_string("blue"));
-    json_object_dotset(obj, "favorites.sport", json_value_init_string("running"));
-    json_object_dotset(obj, "favorites.fruit", json_value_init_string("apple"));
+    json_object_set_string(obj, "first", "John");
+    json_object_set_string(obj, "last", "Doe");
+    json_object_set_number(obj, "age", 25);
+    json_object_set_boolean(obj, "registered", 1);
+    json_object_set_value(obj, "interests", json_value_init_array());
+    json_array_append_string(json_object_get_array(obj, "interests"), "Writing");
+    json_array_append_string(json_object_get_array(obj, "interests"), "Mountain Biking");
+    json_array_replace_string(json_object_get_array(obj, "interests"), 0, "Reading");
+    json_object_dotset_string(obj, "favorites.color", "blue");
+    json_object_dotset_string(obj, "favorites.sport", "running");
+    json_object_dotset_string(obj, "favorites.fruit", "apple");
     json_object_dotremove(obj, "favorites.fruit");
-    json_object_set(obj, "utf string", json_value_init_string("\\u006corem\\u0020ipsum"));
-    json_object_set(obj, "utf-8 string", json_value_init_string("あいうえお"));
-    json_object_set(obj, "surrogate string", json_value_init_string("lorem\\uD834\\uDD1Eipsum\\uD834\\uDF67lorem"));
+    json_object_set_string(obj, "utf string", "\\u006corem\\u0020ipsum");
+    json_object_set_string(obj, "utf-8 string", "あいうえお");
+    json_object_set_string(obj, "surrogate string", "lorem\\uD834\\uDD1Eipsum\\uD834\\uDF67lorem");
     TEST(json_value_equals(val_from_file, val));
 }
 
@@ -261,11 +261,11 @@ void test_suite_6(void) {
     a = json_parse_file(filename);
     b = json_parse_file(filename);
     TEST(json_value_equals(a, b));
-    json_object_set(json_object(a), "string", json_value_init_string("eki"));
+    json_object_set_string(json_object(a), "string", "eki");
     TEST(!json_value_equals(a, b));
     a = json_value_deep_copy(b);
     TEST(json_value_equals(a, b));
-    json_array_append(json_object_get_array(json_object(b), "string array"), json_value_init_number(1337));
+    json_array_append_number(json_object_get_array(json_object(b), "string array"), 1337);
     TEST(!json_value_equals(a, b));
 }
 
@@ -273,12 +273,12 @@ void test_suite_7(void) {
     JSON_Value *val_from_file = json_parse_file("tests/test_5.txt");
     JSON_Value *schema = json_value_init_object();
     JSON_Object *schema_obj = json_value_get_object(schema);
-    json_object_set(schema_obj, "first", json_value_init_string(""));
-    json_object_set(schema_obj, "last", json_value_init_string(""));
-    json_object_set(schema_obj, "age", json_value_init_number(0));
-    json_object_set(schema_obj, "favorites", json_value_init_null());
+    json_object_set_string(schema_obj, "first", "");
+    json_object_set_string(schema_obj, "last", "");
+    json_object_set_number(schema_obj, "age", 0);
+    json_object_set_null(schema_obj, "favorites");
     TEST(json_validate(schema, val_from_file));
-    json_object_set(schema_obj, "age", json_value_init_string(""));
+    json_object_set_string(schema_obj, "age", "");
     TEST(json_validate(schema, val_from_file) == 0);
 }
 

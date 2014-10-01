@@ -100,14 +100,14 @@ const char  * json_object_get_name (const JSON_Object *object, size_t index);
     
 /* Functions below return 0 on success and -1 on failure. */
 /* Creates new name-value pair or frees and replaces old value with new one. */
-int json_object_set(JSON_Object *object, const char *name, JSON_Value *value);
+int json_object_set_value(JSON_Object *object, const char *name, JSON_Value *value);
 int json_object_set_string(JSON_Object *object, const char *name, const char *string);
 int json_object_set_number(JSON_Object *object, const char *name, double number);
 int json_object_set_boolean(JSON_Object *object, const char *name, int boolean);
 int json_object_set_null(JSON_Object *object, const char *name);
 
 /* Works like dotget functions, but creates whole hierarchy if necessary. */
-int json_object_dotset(JSON_Object *object, const char *name, JSON_Value *value);
+int json_object_dotset_value(JSON_Object *object, const char *name, JSON_Value *value);
 int json_object_dotset_string(JSON_Object *object, const char *name, const char *string);
 int json_object_dotset_number(JSON_Object *object, const char *name, double number);
 int json_object_dotset_boolean(JSON_Object *object, const char *name, int boolean);
@@ -140,13 +140,17 @@ int json_array_remove(JSON_Array *array, size_t i);
 
 /* Frees and removes from array value at given index and replaces it with given one.
  * Does nothing and returns error (-1) if index doesn't exist. */
-int json_array_replace(JSON_Array *array, size_t i, JSON_Value *value);
-    
+int json_array_replace_value(JSON_Array *array, size_t i, JSON_Value *value);
+int json_array_replace_string(JSON_Array *array, size_t i, const char* string);
+int json_array_replace_number(JSON_Array *array, size_t i, double number);
+int json_array_replace_boolean(JSON_Array *array, size_t i, int boolean);
+int json_array_replace_null(JSON_Array *array, size_t i);
+
 /* Frees and removes all values from array */
 int json_array_clear(JSON_Array *array);
 
 /* Appends new value at the end of array. */
-int json_array_append(JSON_Array *array, JSON_Value *value);
+int json_array_append_value(JSON_Array *array, JSON_Value *value);
 int json_array_append_string(JSON_Array *array, const char *string);
 int json_array_append_number(JSON_Array *array, double number);
 int json_array_append_boolean(JSON_Array *array, int boolean);
