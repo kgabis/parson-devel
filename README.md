@@ -131,7 +131,7 @@ Created value (after formatting outside parson):
 
 ##Contributing
 
-I'm always merging working bug fixes. However, if you want to add something to the API, 
+I will always merge *working* bug fixes. However, if you want to add something to the API, 
 I *won't* merge it without prior discussion.
 
 ##License
