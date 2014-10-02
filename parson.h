@@ -64,13 +64,22 @@ JSON_Value  * json_parse_string_with_comments(const char *string);
 size_t json_serialization_size(const JSON_Value *value);
 int    json_serialize_to_buffer(const JSON_Value *value, char *buf, size_t buf_size_in_bytes);
 int    json_serialize_to_file(const JSON_Value *value, const char *filename);
-char * json_serialize(const JSON_Value *value);
-void   json_free_serialization_string(char *string);
+char * json_serialize_to_string(const JSON_Value *value);
+void   json_free_serialization_string(char *string); /* frees string from json_serialize_to_string */
 
 /* Comparing */
 int  json_value_equals(const JSON_Value *a, const JSON_Value *b);
     
-/* Verification */
+/* Validation
+   This is *NOT* JSON Schema. It validates json by checking if object have identically 
+   named fields with matching types.
+   For example schema {"name":"", "age":0} will validate 
+   {"name":"Joe", "age":25} and {"name":"Joe", "age":25, "gender":"m"},
+   but not {"name":"Joe"} or {"name":"Joe", "age":"Cucumber"}.
+   In case of arrays, only first value in schema is checked against all values in tested array.
+   Empty objects ({}) validate all objects, empty arrays ([]) validate all arrays,
+   null validates every values of every type.
+ */
 int json_validate(const JSON_Value *schema, const JSON_Value *value);
     
 /*
@@ -98,7 +107,7 @@ int           json_object_dotget_boolean(const JSON_Object *object, const char *
 size_t        json_object_get_count(const JSON_Object *object);
 const char  * json_object_get_name (const JSON_Object *object, size_t index);
     
-/* Functions below return 0 on success and -1 on failure. */
+/* Functions below return 0 on success, some other value on failure */
 /* Creates new name-value pair or frees and replaces old value with new one. */
 int json_object_set_value(JSON_Object *object, const char *name, JSON_Value *value);
 int json_object_set_string(JSON_Object *object, const char *name, const char *string);
@@ -133,7 +142,7 @@ double        json_array_get_number (const JSON_Array *array, size_t index);
 int           json_array_get_boolean(const JSON_Array *array, size_t index);
 size_t        json_array_get_count  (const JSON_Array *array);
     
-/* Functions below return 0 on success and -1 on failure. */
+/* Functions below return 0 on success, some other value otherwise */
 /* Frees and removes value at given index, does nothing and returns error (-1) if index doesn't exist.
  * Order of values in array may change during execution.  */
 int json_array_remove(JSON_Array *array, size_t i);

@@ -93,6 +93,8 @@ void persistence_example() {
     }
     name = json_object_get_string(json_object(user_data), "name");
     printf("Hello, %s.", name);
+    json_value_free(schema);
+    json_value_free(user_data);
     return;
 }
 ```
@@ -109,7 +111,7 @@ json_object_set_number(root_object, "age", 25);
 json_object_dotset_string(root_object, "address.city", "Cupertino");
 json_object_dotset_value(root_object, "contact.emails", 
 	json_parse_string("[\"email@example.com\", \"email2@example.com\"]"));
-puts(json_serialize(root_value));
+puts(json_serialize_to_string(root_value));
 ```
 
 Created value (after formatting outside parson):

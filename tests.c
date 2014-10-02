@@ -73,23 +73,23 @@ int main() {
 void test_suite_1(void) {
     JSON_Value *val;
     TEST((val = json_parse_file("tests/test_1_1.txt")) != NULL);
-    TEST(json_value_equals(json_parse_string(json_serialize(val)), val));
+    TEST(json_value_equals(json_parse_string(json_serialize_to_string(val)), val));
     if (val) { json_value_free(val); }
     TEST((val = json_parse_file("tests/test_1_2.txt")) != NULL);
-    TEST(json_value_equals(json_parse_string(json_serialize(val)), val));
+    TEST(json_value_equals(json_parse_string(json_serialize_to_string(val)), val));
     if (val) { json_value_free(val); }
     TEST((val = json_parse_file("tests/test_1_3.txt")) != NULL);
-    TEST(json_value_equals(json_parse_string(json_serialize(val)), val));
+    TEST(json_value_equals(json_parse_string(json_serialize_to_string(val)), val));
     if (val) { json_value_free(val); }
     
     TEST((val = json_parse_file_with_comments("tests/test_1_1.txt")) != NULL);
-    TEST(json_value_equals(json_parse_string(json_serialize(val)), val));
+    TEST(json_value_equals(json_parse_string(json_serialize_to_string(val)), val));
     if (val) { json_value_free(val); }
     TEST((val = json_parse_file_with_comments("tests/test_1_2.txt")) != NULL);
-    TEST(json_value_equals(json_parse_string(json_serialize(val)), val));
+    TEST(json_value_equals(json_parse_string(json_serialize_to_string(val)), val));
     if (val) { json_value_free(val); }
     TEST((val = json_parse_file_with_comments("tests/test_1_3.txt")) != NULL);
-    TEST(json_value_equals(json_parse_string(json_serialize(val)), val));
+    TEST(json_value_equals(json_parse_string(json_serialize_to_string(val)), val));
     if (val) { json_value_free(val); }
 }
 
@@ -160,7 +160,7 @@ void test_suite_2_no_comments(void) {
     JSON_Value *root_value = NULL;
     root_value = json_parse_file(filename);
     test_suite_2(root_value);
-    TEST(json_value_equals(root_value, json_parse_string(json_serialize(root_value))));
+    TEST(json_value_equals(root_value, json_parse_string(json_serialize_to_string(root_value))));
     json_value_free(root_value);
 }
 
@@ -169,7 +169,7 @@ void test_suite_2_with_comments(void) {
     JSON_Value *root_value = NULL;
     root_value = json_parse_file_with_comments(filename);
     test_suite_2(root_value);
-    TEST(json_value_equals(root_value, json_parse_string(json_serialize(root_value))));
+    TEST(json_value_equals(root_value, json_parse_string(json_serialize_to_string(root_value))));
     json_value_free(root_value);
 }
 
@@ -348,5 +348,7 @@ void persistence_example() {
     }
     name = json_object_get_string(json_object(user_data), "name");
     printf("Hello, %s.", name);
+    json_value_free(schema);
+    json_value_free(user_data);
     return;
 }

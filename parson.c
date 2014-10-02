@@ -1084,7 +1084,7 @@ int json_serialize_to_buffer(const JSON_Value *value, char *buf, size_t buf_size
 int json_serialize_to_file(const JSON_Value *value, const char *filename) {
     int return_code = PARSON_SUCCESS;
     FILE *fp = NULL;
-    char *serialized_string = json_serialize(value);
+    char *serialized_string = json_serialize_to_string(value);
     if (serialized_string == NULL) {
         return PARSON_ERROR;
     }
@@ -1101,7 +1101,7 @@ int json_serialize_to_file(const JSON_Value *value, const char *filename) {
     return return_code;
 }
 
-char * json_serialize(const JSON_Value *value) {
+char * json_serialize_to_string(const JSON_Value *value) {
     int serialization_result = PARSON_ERROR;
     size_t buf_size_bytes = json_serialization_size(value);
     char *buf = (char*)PARSON_MALLOC(buf_size_bytes);
@@ -1230,7 +1230,9 @@ int json_object_dotset_value(JSON_Object *object, const char *name, JSON_Value *
     char *current_name = NULL;
     JSON_Object *temp_obj = NULL;
     JSON_Value *new_value = NULL;
-    if (dot_pos == NULL) {
+    if (value == NULL) {
+        return PARSON_ERROR;
+    } else if (dot_pos == NULL) {
         return json_object_set_value(object, name, value);
     } else {
         current_name = parson_strndup(name, dot_pos - name);
@@ -1398,7 +1400,8 @@ int json_value_equals(const JSON_Value *a, const JSON_Value *b) {
                 return 0;
             }
             for (i = 0; i < a_count; i++) {
-                if (!json_value_equals(json_array_get_value(a_array, i), json_array_get_value(b_array, i))) {
+                if (!json_value_equals(json_array_get_value(a_array, i),
+                                       json_array_get_value(b_array, i))) {
                     return 0;
                 }
             }
@@ -1413,7 +1416,8 @@ int json_value_equals(const JSON_Value *a, const JSON_Value *b) {
             }
             for (i = 0; i < a_count; i++) {
                 key = json_object_get_name(a_object, i);
-                if (!json_value_equals(json_object_get_value(a_object, key), json_object_get_value(b_object, key))) {
+                if (!json_value_equals(json_object_get_value(a_object, key),
+                                       json_object_get_value(b_object, key))) {
                     return 0;
                 }
             }
@@ -1443,11 +1447,11 @@ JSON_Object * json_object (const JSON_Value *value) {
     return json_value_get_object(value);
 }
 
-JSON_Array  * json_array  (const JSON_Value *value) {
+JSON_Array * json_array  (const JSON_Value *value) {
     return json_value_get_array(value);
 }
 
-const char  * json_string (const JSON_Value *value) {
+const char * json_string (const JSON_Value *value) {
     return json_value_get_string(value);
 }
 
