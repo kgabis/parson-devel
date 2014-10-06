@@ -84,7 +84,7 @@ void persistence_example() {
     JSON_Value *user_data = json_parse_file("user_data.json");
     char buf[256];
     const char *name = NULL;
-    if (!user_data || !json_validate(schema, user_data)) {
+    if (!user_data || !json_validate(schema, user_data) == JSONSuccess) {
         puts("Enter your name:");
         scanf("%s", buf);
         user_data = json_value_init_object();

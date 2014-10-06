@@ -277,9 +277,9 @@ void test_suite_7(void) {
     json_object_set_string(schema_obj, "last", "");
     json_object_set_number(schema_obj, "age", 0);
     json_object_set_null(schema_obj, "favorites");
-    TEST(json_validate(schema, val_from_file));
+    TEST(json_validate(schema, val_from_file) == JSONSuccess);
     json_object_set_string(schema_obj, "age", "");
-    TEST(json_validate(schema, val_from_file) == 0);
+    TEST(json_validate(schema, val_from_file) == JSONFailure);
 }
 
 void test_suite_8(void) {
@@ -288,7 +288,7 @@ void test_suite_8(void) {
     JSON_Value *a = NULL;
     JSON_Value *b = NULL;
     a = json_parse_file(filename);
-    TEST(json_serialize_to_file(a, temp_filename) == 0);
+    TEST(json_serialize_to_file(a, temp_filename) == JSONSuccess);
     b = json_parse_file(temp_filename);
     TEST(json_value_equals(a, b));
     remove(temp_filename);
@@ -339,7 +339,7 @@ void persistence_example() {
     JSON_Value *user_data = json_parse_file("user_data.json");
     char buf[256];
     const char *name = NULL;
-    if (!user_data || !json_validate(schema, user_data)) {
+    if (!user_data || json_validate(schema, user_data) == JSONSuccess) {
         puts("Enter your name:");
         scanf("%s", buf);
         user_data = json_value_init_object();
