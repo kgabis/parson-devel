@@ -236,21 +236,21 @@ void test_suite_5(void) {
     
     JSON_Value *val = json_value_init_object();
     JSON_Object *obj = json_value_get_object(val);
-    json_object_set_string(obj, "first", "John");
-    json_object_set_string(obj, "last", "Doe");
-    json_object_set_number(obj, "age", 25);
-    json_object_set_boolean(obj, "registered", 1);
-    json_object_set_value(obj, "interests", json_value_init_array());
-    json_array_append_string(json_object_get_array(obj, "interests"), "Writing");
-    json_array_append_string(json_object_get_array(obj, "interests"), "Mountain Biking");
-    json_array_replace_string(json_object_get_array(obj, "interests"), 0, "Reading");
-    json_object_dotset_string(obj, "favorites.color", "blue");
-    json_object_dotset_string(obj, "favorites.sport", "running");
-    json_object_dotset_string(obj, "favorites.fruit", "apple");
-    json_object_dotremove(obj, "favorites.fruit");
-    json_object_set_string(obj, "utf string", "\\u006corem\\u0020ipsum");
-    json_object_set_string(obj, "utf-8 string", "あいうえお");
-    json_object_set_string(obj, "surrogate string", "lorem\\uD834\\uDD1Eipsum\\uD834\\uDF67lorem");
+    TEST(json_object_set_string(obj, "first", "John") == JSONSuccess);
+    TEST(json_object_set_string(obj, "last", "Doe") == JSONSuccess);
+    TEST(json_object_set_number(obj, "age", 25) == JSONSuccess);
+    TEST(json_object_set_boolean(obj, "registered", 1) == JSONSuccess);
+    TEST(json_object_set_value(obj, "interests", json_value_init_array()) == JSONSuccess);
+    TEST(json_array_append_string(json_object_get_array(obj, "interests"), "Writing") == JSONSuccess);
+    TEST(json_array_append_string(json_object_get_array(obj, "interests"), "Mountain Biking") == JSONSuccess);
+    TEST(json_array_replace_string(json_object_get_array(obj, "interests"), 0, "Reading") == JSONSuccess);
+    TEST(json_object_dotset_string(obj, "favorites.color", "blue") == JSONSuccess);
+    TEST(json_object_dotset_string(obj, "favorites.sport", "running") == JSONSuccess);
+    TEST(json_object_dotset_string(obj, "favorites.fruit", "apple") == JSONSuccess);
+    TEST(json_object_dotremove(obj, "favorites.fruit") == JSONSuccess);
+    TEST(json_object_set_string(obj, "utf string", "\\u006corem\\u0020ipsum") == JSONSuccess);
+    TEST(json_object_set_string(obj, "utf-8 string", "あいうえお") == JSONSuccess);
+    TEST(json_object_set_string(obj, "surrogate string", "lorem\\uD834\\uDD1Eipsum\\uD834\\uDF67lorem") == JSONSuccess);
     TEST(json_value_equals(val_from_file, val));
 }
 
