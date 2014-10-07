@@ -11,7 +11,7 @@ This is a version in development (hence -devel suffix), it contains some feature
 * Test suites
 
 ##Installation
-Run the following code:
+Run:
 ```
 git clone https://github.com/kgabis/parson-devel.git
 ```
@@ -79,7 +79,7 @@ Date       SHA        Author
 ###Persistence
 In this example I'm using parson to save user information to a file and then load it and validate later.
 ```c
-void persistence_example() {
+void persistence_example(void) {
     JSON_Value *schema = json_parse_string("{\"name\":\"\"}");
     JSON_Value *user_data = json_parse_file("user_data.json");
     char buf[256];
@@ -99,19 +99,24 @@ void persistence_example() {
 }
 ```
 
-###Creating JSON values in code
+###Serialization
 Creating JSON values is very simple thanks to the dot notation. 
 Object hierarchy is automatically created when addressing specific fields. 
 In the following example I create a simple JSON value containing basic information about a person.
 ```c
-JSON_Value *root_value = json_value_init_object();
-JSON_Object *root_object = json_value_get_object(root_value);
-json_object_set_string(root_object, "name", "John Smith");
-json_object_set_number(root_object, "age", 25);
-json_object_dotset_string(root_object, "address.city", "Cupertino");
-json_object_dotset_value(root_object, "contact.emails", 
-	json_parse_string("[\"email@example.com\", \"email2@example.com\"]"));
-puts(json_serialize_to_string(root_value));
+void serialization_example(void) {
+    JSON_Value *root_value = json_value_init_object();
+    JSON_Object *root_object = json_value_get_object(root_value);
+    char *serialized_string = NULL;
+    json_object_set_string(root_object, "name", "John Smith");
+    json_object_set_number(root_object, "age", 25);
+    json_object_dotset_string(root_object, "address.city", "Cupertino");
+    json_object_dotset_value(root_object, "contact.emails", json_parse_string("[\"email@example.com\",\"email2@example.com\"]"));
+    serialized_string = json_serialize_to_string(root_value);
+    puts(serialized_string);
+    json_free_serialized_string(serialized_string);
+}
+
 ```
 
 Created value (after formatting outside parson):
@@ -135,6 +140,7 @@ Created value (after formatting outside parson):
 
 I will always merge *working* bug fixes. However, if you want to add something to the API, 
 I *won't* merge it without prior discussion.
+Remember to follow parson's code style and write appropriate tests.
 
 ##License
 [The MIT License (MIT)](http://opensource.org/licenses/mit-license.php)

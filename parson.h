@@ -72,7 +72,7 @@ size_t      json_serialization_size(const JSON_Value *value);
 JSON_Status json_serialize_to_buffer(const JSON_Value *value, char *buf, size_t buf_size_in_bytes);
 JSON_Status json_serialize_to_file(const JSON_Value *value, const char *filename);
 char *      json_serialize_to_string(const JSON_Value *value);
-void        json_free_serialization_string(char *string); /* frees string from json_serialize_to_string */
+void        json_free_serialized_string(char *string); /* frees string from json_serialize_to_string */
 
 /* Comparing */
 int  json_value_equals(const JSON_Value *a, const JSON_Value *b);
@@ -85,7 +85,7 @@ int  json_value_equals(const JSON_Value *a, const JSON_Value *b);
    but not {"name":"Joe"} or {"name":"Joe", "age":"Cucumber"}.
    In case of arrays, only first value in schema is checked against all values in tested array.
    Empty objects ({}) validate all objects, empty arrays ([]) validate all arrays,
-   null validates every values of every type.
+   null validates values of every type.
  */
 JSON_Status json_validate(const JSON_Value *schema, const JSON_Value *value);
     
@@ -96,8 +96,8 @@ JSON_Value  * json_object_get_value  (const JSON_Object *object, const char *nam
 const char  * json_object_get_string (const JSON_Object *object, const char *name);
 JSON_Object * json_object_get_object (const JSON_Object *object, const char *name);
 JSON_Array  * json_object_get_array  (const JSON_Object *object, const char *name);
-double        json_object_get_number (const JSON_Object *object, const char *name);
-int           json_object_get_boolean(const JSON_Object *object, const char *name);
+double        json_object_get_number (const JSON_Object *object, const char *name); /* returns 0 on fail */
+int           json_object_get_boolean(const JSON_Object *object, const char *name); /* returns -1 on fail */
 
 /* dotget functions enable addressing values with dot notation in nested objects,
  just like in structs or c++/java/c# objects (e.g. objectA.objectB.value).
@@ -107,8 +107,8 @@ JSON_Value  * json_object_dotget_value  (const JSON_Object *object, const char *
 const char  * json_object_dotget_string (const JSON_Object *object, const char *name);
 JSON_Object * json_object_dotget_object (const JSON_Object *object, const char *name);
 JSON_Array  * json_object_dotget_array  (const JSON_Object *object, const char *name);
-double        json_object_dotget_number (const JSON_Object *object, const char *name);
-int           json_object_dotget_boolean(const JSON_Object *object, const char *name);
+double        json_object_dotget_number (const JSON_Object *object, const char *name); /* returns 0 on fail */
+int           json_object_dotget_boolean(const JSON_Object *object, const char *name); /* returns -1 on fail */
 
 /* Functions to get available names */
 size_t        json_object_get_count(const JSON_Object *object);
@@ -144,8 +144,8 @@ JSON_Value  * json_array_get_value  (const JSON_Array *array, size_t index);
 const char  * json_array_get_string (const JSON_Array *array, size_t index);
 JSON_Object * json_array_get_object (const JSON_Array *array, size_t index);
 JSON_Array  * json_array_get_array  (const JSON_Array *array, size_t index);
-double        json_array_get_number (const JSON_Array *array, size_t index);
-int           json_array_get_boolean(const JSON_Array *array, size_t index);
+double        json_array_get_number (const JSON_Array *array, size_t index); /* returns 0 on fail */
+int           json_array_get_boolean(const JSON_Array *array, size_t index); /* returns -1 on fail */
 size_t        json_array_get_count  (const JSON_Array *array);
     
 /* Frees and removes value at given index, does nothing and returns JSONFailure if index doesn't exist.

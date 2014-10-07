@@ -1095,7 +1095,7 @@ JSON_Status json_serialize_to_file(const JSON_Value *value, const char *filename
             return_code = JSONFailure;
         }
     }
-    json_free_serialization_string(serialized_string);
+    json_free_serialized_string(serialized_string);
     return return_code;
 }
 
@@ -1107,13 +1107,13 @@ char * json_serialize_to_string(const JSON_Value *value) {
         return NULL;
     serialization_result = json_serialize_to_buffer(value, buf, buf_size_bytes);
     if (serialization_result == JSONFailure) {
-        json_free_serialization_string(buf);
+        json_free_serialized_string(buf);
         return NULL;
     }
     return buf;
 }
 
-void json_free_serialization_string(char *string) {
+void json_free_serialized_string(char *string) {
     PARSON_FREE(string);
 }
 
