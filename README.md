@@ -1,6 +1,6 @@
 ##About
 Parson is a lighweight [json](http://json.org) library written in C.
-This is a version in development (hence -devel suffix), it contains some features [parson](https://github.com/kgabis/parson) lacks, but API can and probably will change in future.
+This is a development repository (hence -devel suffix), used to test new features. It's API may and probably will change, so **I recommend getting [parson](http://github.com/kgabis/parson) from it's original repository**.
 
 ##Features
 * Full JSON support
