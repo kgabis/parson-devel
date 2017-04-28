@@ -1,8 +1,8 @@
-##About
+## About
 Parson is a lighweight [json](http://json.org) library written in C.
 This is a development repository (hence -devel suffix), used to test new features. It's API may and probably will change, so **I recommend getting [parson](http://github.com/kgabis/parson) from it's original repository**.
 
-##Features
+## Features
 * Full JSON support
 * Lightweight (only 2 files)
 * Simple API
@@ -10,7 +10,7 @@ This is a development repository (hence -devel suffix), used to test new feature
 * C89 compatible
 * Test suites
 
-##Installation
+## Installation
 Run:
 ```
 git clone https://github.com/kgabis/parson-devel.git
@@ -19,8 +19,8 @@ and copy parson.h and parson.c to you source code tree.
 
 Run ```make test``` to compile and run tests.
 
-##Examples
-###Parsing JSON
+## Examples
+### Parsing JSON
 Here is a function, which prints basic commit info (date, sha and author) from a github repository.  
 ```c
 void print_commits_info(const char *username, const char *repo) {
@@ -76,7 +76,7 @@ Date       SHA        Author
 ...
 ```
 
-###Persistence
+### Persistence
 In this example I'm using parson to save user information to a file and then load it and validate later.
 ```c
 void persistence_example(void) {
@@ -99,7 +99,7 @@ void persistence_example(void) {
 }
 ```
 
-###Serialization
+### Serialization
 Creating JSON values is very simple thanks to the dot notation. 
 Object hierarchy is automatically created when addressing specific fields. 
 In the following example I create a simple JSON value containing basic information about a person.
@@ -136,11 +136,11 @@ Created value (after formatting outside parson):
 }
 ```
 
-##Contributing
+## Contributing
 
 I will always merge *working* bug fixes. However, if you want to add something to the API, 
 I *won't* merge it without prior discussion.
 Remember to follow parson's code style and write appropriate tests.
 
-##License
+## License
 [The MIT License (MIT)](http://opensource.org/licenses/mit-license.php)
